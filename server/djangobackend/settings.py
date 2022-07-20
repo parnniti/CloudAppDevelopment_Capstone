@@ -27,7 +27,10 @@ DEBUG = True
 
 APPEND_SLASH = True
 
-ALLOWED_HOSTS = ["localhost"]
+ALLOWED_HOSTS = [
+    "localhost",
+    "parnniti-djangoapp.au-syd.cf.appdomain.cloud"
+    ]
 
 
 # Application definition
