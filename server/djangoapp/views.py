@@ -7,7 +7,8 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth import login, logout, authenticate
 from django.contrib import messages
 from datetime import datetime
-from .restapis import get_dealers_from_cf, get_dealer_reviews_from_cf, get_dealer_by_id
+from .restapis import get_dealers_from_cf, get_dealer_reviews_from_cf, get_dealer_by_id, post_request
+from .models import CarModel
 import logging
 import json
 
@@ -87,7 +88,6 @@ def get_dealerships(request):
 # Create a `get_dealer_details` view to render the reviews of a dealer
 def get_dealer_details(request, dealer_id):
     if request.method == "GET":
-        reviews = get_dealer_reviews_from_cf(dealer_id)    
         context = {
             "dealer": get_dealer_by_id(dealer_id),
             "reviews": get_dealer_reviews_from_cf(dealer_id=dealer_id),
@@ -95,6 +95,21 @@ def get_dealer_details(request, dealer_id):
         return render(request, 'djangoapp/dealer_details.html', context)
 
 # Create a `add_review` view to submit a review
-# def add_review(request, dealer_id):
-# ...
 
+def add_review(request, dealer_id):
+
+    if request.method == "POST" and request.user.is_authenticated:
+
+        review = {
+            "time": datetime.utcnow().isoformat(),
+            "dealership": dealer_id,
+            "review": request.POST['content'],
+            "name": request.user.username,
+            "purchase": False,
+            # "car_make": car.carmake.name,
+            # "car_model": car.name,
+            # "car_year": int(car.year.strftime("%Y")),
+        }
+
+        post_request(review)
+        return redirect('djangoapp:dealer_details', dealer_id=dealer_id)

@@ -1,10 +1,13 @@
 import requests
 import json
-# import related models here
-from .models import CarDealer, DealerReview
+from requests.auth import HTTPBasicAuth
 from ibmcloudant.cloudant_v1 import CloudantV1
 from ibm_cloud_sdk_core.authenticators import IAMAuthenticator
 from pprint import pprint
+from enum import Enum
+
+# import related models here
+from .models import CarDealer, DealerReview
 
 COUCH_URL = "https://db3582cc-bf02-4c82-a0fb-ac354b647a59-bluemix.cloudantnosqldb.appdomain.cloud"
 IAM_API_KEY = "zRYGmwl5fu4dP_NVCvUd4Vc8lyiBphX4CjSf5bwXvfvr"
@@ -14,13 +17,15 @@ authenticator = IAMAuthenticator(IAM_API_KEY)
 service = CloudantV1(authenticator=authenticator)
 service.set_service_url(COUCH_URL)
 
-# Create a `get_request` to make HTTP GET requests
-# e.g., response = requests.get(url, params=params, headers={'Content-Type': 'application/json'},
-#                                     auth=HTTPBasicAuth('apikey', api_key))
-
 
 # Create a `post_request` to make HTTP POST requests
 # e.g., response = requests.post(url, params=kwargs, json=payload)
+def post_request(review, **kwargs):
+    response = service.post_document(
+        db='reviews',
+        document=review,
+    ).get_result()
+    return response
 
 
 # Create a get_dealers_from_cf method to get dealers from a cloud function
@@ -81,13 +86,18 @@ def get_dealers_by_state(state="CA"):
 
 
 def review_json_to_object(review_json):
-    review_obj = DealerReview(
-        dealership=review_json["dealership"],
-        name=review_json["name"],
-        purchase=review_json["purchase"],
-        review=review_json["review"]
-    )
+    try:
+        review_obj = DealerReview(
+            dealership=review_json["dealership"],
+            name=review_json["name"],
+            review=review_json["review"],
+            purchase=review_json["purchase"],
+        )
+    except:
+        print("Error while creating a review object")
 
+    review_obj.sentiment = analyze_review_sentiments(review_obj.review)
+    
     if "id" in review_json:
         review_obj.id = review_json["id"]
     if "purchase_date" in review_json:
@@ -108,10 +118,12 @@ def get_dealer_reviews_from_cf(dealer_id=None):
             res = service.post_find(
                 db='reviews',
                 selector={
-                    "id": dealer_id,
+                    "dealership": dealer_id,
                 }
             ).get_result()['docs']
-            return [review_json_to_object(review_json) for review_json in res]
+
+            results = [review_json_to_object(review_json) for review_json in res]
+            return results
             
         else:
             res = service.post_all_docs(
@@ -128,9 +140,35 @@ def get_dealer_reviews_from_cf(dealer_id=None):
         return {"error": "Something went wrong with get_dealer_reviews_from_cf()"}
 
 # Create an `analyze_review_sentiments` method to call Watson NLU and analyze text
-# def analyze_review_sentiments(text):
-# - Call get_request() with specified arguments
-# - Get the returned sentiment label such as Positive or Negative
 
+NLU_API_KEY = "8kyJZrl0F6ziUmLLXcFnfkyWx7Jm0lgcOEW8-d_5-Chq"
+NLU_URL = "https://api.au-syd.natural-language-understanding.watson.cloud.ibm.com/instances/a78b5af7-0f36-4503-8beb-08652486aaa3"
+
+class NLUmethods(Enum):
+    ANALYZE = "/v1/analyze"
+
+
+def analyze_review_sentiments(text):
+
+    params = {
+        "text": text,
+        "version": "2022-04-07",
+        "features": "sentiment",
+    }
+
+    response = requests.get(
+        url = NLU_URL + NLUmethods.ANALYZE.value,
+        params = params,
+        headers = {
+            'Content-Type': 'application/json'
+        },
+        auth=HTTPBasicAuth('apikey', NLU_API_KEY),
+    )
+    json_text = json.loads(response.text)
+
+    try:
+        return json_text['sentiment']['document']['label']
+    except:
+        return "Cannot detect sentiment: the text is too short."
 
 

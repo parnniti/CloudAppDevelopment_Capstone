@@ -47,7 +47,26 @@
     </div>
 </nav>
 <div class="container-fluid">
-    {{reviews}}
+    <h1> {{ dealer.full_name }} </h1>
+    <br>
+    {% for review in reviews %}
+        <br>
+        {{review}}
+    {% endfor %}
+
+    <br><br>
+
+    <form action="/djangoapp/dealer/{{dealer.id}}/add_review/" method="post">
+        <h1> Add Review </h1>
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label for="content"><b>Enter the review content:</b></label>
+            <textarea class="form-control" id="content" name="content" rows="2" required></textarea>
+        </div>
+        <br />
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
 </div>
 </body>
 
