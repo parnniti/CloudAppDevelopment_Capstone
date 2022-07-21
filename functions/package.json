@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@ibm-cloud/cloudant": "^0.1.4"
+  }
+}
