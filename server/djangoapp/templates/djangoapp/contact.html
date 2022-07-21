@@ -13,27 +13,45 @@
 
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <a class="navbar-brand" style="margin-left:50px" href="/djangoapp">CARS BOMB!</a>
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <a class="navbar-brand" style="margin-left:50px" href="{% url 'djangoapp:index' %}">CARS BOMB!</a>
 
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-          <ul class="navbar-nav ml-auto" style="margin-right:200px;">
-            <li class="nav-item active">
-              <a class="nav-link" href="/djangoapp/about">About Us</a>
-            </li>
-            <li class="nav-item active">
-                <a class="nav-link" href="/djangoapp/contact">Contact Us</a>
-            </li>
-          </ul>
-        </div>
-    </nav>
-
-    <div class="container-fluid">
-        <h1>Our Contacts</h1>
-        <ul>
-            <li>Phone: 123-456-7890 </li>
-            <li>email: carbomb@example.com </li>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav ml-auto" >
+        <li class="nav-item active">
+            <a class="nav-link" href="{% url 'djangoapp:about' %}">About Us</a>
+        </li>
+        <li class="nav-item active">
+            <a class="nav-link" href="{% url 'djangoapp:contact' %}">Contact Us</a>
+        </li>
+        {% if user.is_authenticated %}
+        <li style="margin-left:100px">
+            <a class="btn btn-link" href="#">{{ user.first_name }} ({{ user.username }})</a>
+            <a class="btn btn-link" href="{% url 'djangoapp:logout' %}">Logout</a>
+        </li>         
+        {% else %}
+        <li style="margin-left:100px;">
+            <form class="form-inline" action="{% url 'djangoapp:login' %}" method="post">
+                {% csrf_token %}
+                <div class="input-group">
+                    <input type="text" class="form-control" placeholder="Username" name="username">
+                    <input type="password" class="form-control" placeholder="Password" name="psw">
+                    <button class="btn btn-primary" type="submit">Login</button>
+                    <a class="btn btn-link" href="{% url 'djangoapp:registration' %}">Sign Up</a>
+                </div>
+            </form>
+        </li>
+        {% endif %}
         </ul>
     </div>
+</nav>
+
+<div class="container-fluid">
+    <h1>Our Contacts</h1>
+    <ul>
+        <li>Phone: 123-456-7890 </li>
+        <li>email: carbomb@example.com </li>
+    </ul>
+</div>
 </body>
 </html>
