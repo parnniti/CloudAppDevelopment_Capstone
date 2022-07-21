@@ -29,3 +29,4 @@ def main(params=None):
         return {"error": err}
 
 
+print(main())
