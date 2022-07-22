@@ -169,6 +169,6 @@ def analyze_review_sentiments(text):
     try:
         return json_text['sentiment']['document']['label']
     except:
-        return "Cannot detect sentiment: the text is too short."
+        return "neutral"
 
 

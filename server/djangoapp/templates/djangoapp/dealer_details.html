@@ -50,23 +50,27 @@
     <br>
 
     <div class="card-colunms text-center">
-        {% for review in reviews %}
-            <div class="col-sm-3 d-inline-block">
-                <div class="card mb-3 text-left">
-                    <img class="card-img-left" src="{{MEDIA_URL}}/emoji/{{review.sentiment}}.png" width="36px">
-                    <div class="card-body">
-                        <h5 class="card-title mb-0"> {{review.name}} </h5>
-                        <h7 class="card-subtitle text-muted">Details: {{review.car_make}}, {{review.car_model}}, {{review.car_year}}</h7>
-                        <p class="card-text mt-2"> {{review.review}} </p>
-                    </div>    
+        {% if not reviews %}
+            <h5 class="text-muted">No Reviews</h5>
+        {% else %}
+            {% for review in reviews %}
+                <div class="col-sm-3 d-inline-block">
+                    <div class="card mb-3 text-left">
+                        <img class="card-img-left" src="{{MEDIA_URL}}/emoji/{{review.sentiment}}.png" width="36px">
+                        <div class="card-body">
+                            <h5 class="card-title mb-0"> {{review.name}} </h5>
+                            <h7 class="card-subtitle text-muted">Details: {{review.car_make}}, {{review.car_model}}, {{review.car_year}}</h7>
+                            <p class="card-text mt-2"> {{review.review}} </p>
+                        </div>    
+                    </div>
                 </div>
-            </div>
-        {% endfor %} 
+            {% endfor %}
+        {% endif %}
     </div>   
     <br><br>
 
     {% if user.is_authenticated %}
-    <p>
+    <p class="text-center">
         <a class="btn btn-primary" data-toggle="collapse" href="#add_review" role="button" aria-expanded="false" aria-controls="add_review">
             Add Review
         </a>
@@ -114,6 +118,8 @@
             </form>
         </div>
     </div>
+    {% else %}
+        <h6 class="text-muted text-center">Login to give a review for this dealership</h6>
     {% endif %}
 </div>
 </body>
